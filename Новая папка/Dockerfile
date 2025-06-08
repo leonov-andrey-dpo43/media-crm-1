@@ -1,0 +1,37 @@
+FROM php:8.2-cli
+
+# Установка зависимостей для расширений
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    unzip \
+    libzip-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    default-libmysqlclient-dev
+
+# Настройка GD
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+# Установка PHP-расширений
+RUN docker-php-ext-install -j$(nproc) \
+    zip \
+    exif \
+    mbstring \
+    pdo_mysql \
+    gd \
+    pcntl \
+    bcmath \
+    sockets \
+    xml
+
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8000"]

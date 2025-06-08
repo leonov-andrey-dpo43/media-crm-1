@@ -1,0 +1,36 @@
+FROM php:8.2-fpm-alpine
+
+# Обновляем систему и устанавливаем зависимости
+RUN apk update && \
+    apk add --no-cache \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        zlib-dev \
+        icu-dev \
+        g++ \
+        make \
+        autoconf
+
+# Настройка GD с указанием путей
+RUN docker-php-ext-configure gd \
+    --with-jpeg=/usr/include \
+    --with-freetype=/usr/include/freetype2
+
+# Установка расширений
+RUN docker-php-ext-install -j$(nproc) \
+    gd \
+    pdo_mysql \
+    opcache \
+    exif \
+    mbstring \
+    bcmath \
+    sockets \
+    xml
+
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+CMD ["php-fpm"]

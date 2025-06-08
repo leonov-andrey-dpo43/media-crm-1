@@ -1,0 +1,66 @@
+version: '3'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  # Laravel API
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: dockerfile.dev
+    container_name: laravel-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+    working_dir: /var/www/html
+    command: php artisan serve --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    environment:
+      - APP_ENV=local
+      - DB_HOST=db
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Vue.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile.dev
+    container_name: vue-app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - app-network
+  
+volumes:
+  dbdata:
