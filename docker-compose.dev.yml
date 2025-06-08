@@ -9,7 +9,7 @@ services:
   backend:
     build: 
       context: ./backend
-      dockerfile: dockerfile.dev
+      dockerfile: Dockerfile.dev
     container_name: laravel-app
     ports:
       - "8000:8000"
@@ -30,7 +30,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: dockerfile.dev
+      dockerfile: Dockerfile.dev
     container_name: vue-app
     ports:
       - "5173:5173"
