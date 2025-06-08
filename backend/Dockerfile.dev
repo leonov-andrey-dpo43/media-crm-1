@@ -32,6 +32,20 @@ RUN docker-php-ext-install -j$(nproc) \
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Рабочая директория
 WORKDIR /var/www/html
 
+# Копируем только composer.json и lock перед установкой
+COPY composer.json composer.lock ./
+
+# Установка зависимостей
+RUN composer install --no-scripts --no-autoloader
+
+# Копируем оставшиеся файлы (включая vendor из .git)
+COPY . .
+
+# Генерация автозагрузчика
+RUN composer dump-autoload --optimize
+
+# Запуск сервера
 CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8000"]
