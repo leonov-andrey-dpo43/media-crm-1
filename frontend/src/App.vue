@@ -78,6 +78,8 @@ export default {
             return daysOfWeek.map((day, index) => {
                 const date = new Date(weekStart);
                 date.setDate(weekStart.getDate() + index);
+
+            
                 return {
                     dayOfWeek: day,
                     date: `${date.getDate()} ${this.getMonthName(date.getMonth())}`,
@@ -142,24 +144,24 @@ export default {
         async fetchEvents() {
             if (this.isFetching) return; // защита от повторного запуска
             this.isFetching = true;
-
+            
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`);
-                this.events = response.data;
+                this.events = response.data;  
+                console.log(response);
             } catch (error) {
                 console.error('Ошибка при получении событий:', error);
             } finally {
                 this.isFetching = false;
             }
         },
-        getEventsForDay(date) {            
+        getEventsForDay(date) {        
             return this.events.filter(event => event.event_date === date);
         }
     },
     mounted() {
         this.updateScrollBarWidth();
         this.fetchEvents(); // один раз при монтировании
-        console.log('API URL:', import.meta.env.VITE_API_URL);
     }
 };
 
