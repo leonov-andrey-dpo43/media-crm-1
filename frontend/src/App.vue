@@ -159,6 +159,7 @@ export default {
     mounted() {
         this.updateScrollBarWidth();
         this.fetchEvents(); // один раз при монтировании
+        console.log('API URL:', import.meta.env.VITE_API_URL);
     }
 };
 
