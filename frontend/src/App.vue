@@ -230,7 +230,7 @@ export default {
 
 .MainContainer {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     flex-direction: column;    
     justify-content: center;
     align-content: stretch;
