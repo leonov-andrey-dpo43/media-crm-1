@@ -1,0 +1,19 @@
+version: '3.8'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  
+  # Nginx (отдача Laravel API + статики Vue)
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: nginx-prod
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - app-network

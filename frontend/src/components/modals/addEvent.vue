@@ -77,7 +77,7 @@ export default {
 
       try {
         await axios.post(`${import.meta.env.VITE_API_URL}/api/events`, {
-          event_date: this.event.dayOfWeek,
+          eventDate: this.event.dayOfWeek,
           region: this.event.region,
           text: this.event.text,
           performer: this.event.performer

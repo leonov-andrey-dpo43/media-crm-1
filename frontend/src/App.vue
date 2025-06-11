@@ -156,7 +156,7 @@ export default {
             }
         },
         getEventsForDay(date) {        
-            return this.events.filter(event => event.event_date === date);
+            return this.events.filter(event => event.eventDate === date);
         }
     },
     mounted() {
