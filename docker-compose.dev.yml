@@ -60,7 +60,7 @@ services:
       dockerfile: Dockerfile.ng.dev
     container_name: nginx-prod
     ports:
-      - "9999:80"
+      - "80:80"
     restart: unless-stopped
     networks:
       - app-network
