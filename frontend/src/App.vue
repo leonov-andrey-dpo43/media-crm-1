@@ -148,7 +148,6 @@ export default {
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`);
                 this.events = response.data;  
-                console.log(response);
             } catch (error) {
                 console.error('Ошибка при получении событий:', error);
             } finally {
