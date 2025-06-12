@@ -1,8 +1,9 @@
-package com.example.demo.service;
+package com.example.demo.event.service;
 
-import com.example.demo.model.Report;
-import com.example.demo.repository.ReportRepository;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.event.model.Report;
+import com.example.demo.event.repository.ReportRepository;
 
 import java.util.List;
 

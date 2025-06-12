@@ -18,13 +18,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="main isScroll   scrollable">
-                        <div class="dayEventsList" v-for="(day, index) in weekDays" :key="index"
+                <div v-if="!isDataBaseAvalable">Not Avalible!!!</div>
+                <div class="main isScroll scrollable">
+                        <div class="dayEventsList" v-if="isDataBaseAvalable"  v-for="(day, index) in weekDays" :key="index"
                             :id="day.formattedDate">
                             <ItemPost v-for="event in getEventsForDay(day.formattedDate)" :key="event.id" :eventId="event.id"
                         :region="event.region" :text="event.text" :performer="event.performer"
                         @deleteEvent="deleteEvent" />
-                    <AddEventButton @openModal="handleOpenmodal" :dateId="day.formattedDate" />
+                        <AddEventButton @openModal="handleOpenmodal" :dateId="day.formattedDate" />
                         </div>
                     </div>
             </div>
@@ -59,6 +60,7 @@ export default {
             currentDate: new Date(),
             events: [],
             isFetching: false,
+            isDataBaseAvalable: '',
             dateId: '',
             scrollWidth: '0px'
         };
@@ -144,15 +146,20 @@ export default {
         async fetchEvents() {
             if (this.isFetching) return; // защита от повторного запуска
             this.isFetching = true;
-            
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`);
-                this.events = response.data;  
-            } catch (error) {
-                console.error('Ошибка при получении событий:', error);
-            } finally {
-                this.isFetching = false;
+            const healthInfo = await axios.get(`${import.meta.env.VITE_API_URL}/api/health`);
+            if (healthInfo.data.status === "UP") {
+                try {
+                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`);
+                    this.events = response.data;  
+                    this.isDataBaseAvalable = true;
+                } catch (error) {
+                    console.error('Ошибка при получении событий:', error);
+                } finally {
+                    this.isFetching = false;
+                }
             }
+            else this.isDataBaseAvalable = false;
+            
         },
         getEventsForDay(date) {        
             return this.events.filter(event => event.eventDate === date);

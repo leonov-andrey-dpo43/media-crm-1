@@ -1,8 +1,8 @@
-package com.example.demo.controller;
+package com.example.demo.event.controller;
 
-import com.example.demo.model.Report;
-import com.example.demo.service.ReportService;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.event.model.Report;
+import com.example.demo.event.service.ReportService;
 
 import java.util.List;
 
