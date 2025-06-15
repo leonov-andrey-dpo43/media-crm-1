@@ -1,4 +1,4 @@
-package com.example.demo.event.model;
+package com.example.app.event;
 
 import jakarta.persistence.*;
 

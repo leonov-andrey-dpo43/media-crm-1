@@ -10,6 +10,10 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  define: {
+    __APP_ENV__: JSON.stringify(process.env.VITE_API_URL),
+    global: {}, // <-- добавляем это
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

@@ -1,5 +1,13 @@
 <template>
     <div class="container">
+        <div v-if="dbStatus" class="db-status-indicator">
+            <span :class="{
+                'status-up': dbStatus.status === 'UP',
+                'status-down': dbStatus.status !== 'UP'
+            }"></span>
+            {{ dbStatus.status }}
+            <span v-if="dbStatus.reason">({{ dbStatus.reason }})</span>
+        </div>
         <div id="NavBar">
             <SystemClock />
         </div>
@@ -18,7 +26,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="!isDataBaseAvalable">Not Avalible!!!</div>
+                <div v-if="!isDataBaseAvalable" id="DataBaseNotAvalable">База данных временно недоступна!</div>
                 <div class="main isScroll scrollable">
                         <div class="dayEventsList" v-if="isDataBaseAvalable"  v-for="(day, index) in weekDays" :key="index"
                             :id="day.formattedDate">
@@ -39,9 +47,13 @@
 import axios from 'axios';
 import ItemPost from './components/ItemPost.vue';
 import AddEventButton from './components/Buttons/AddEventButton.vue';
-import SystemClock from './components/SystemClock.vue'
-import WeekChanger from './components/WeekChanger.vue'
+import SystemClock from './components/SystemClock.vue';
+import WeekChanger from './components/WeekChanger.vue';
 import Modal from './components/modals/addEvent.vue';
+
+
+//import { Client } from '@stomp/stompjs';
+//import SockJS from 'sockjs-client';
 
 export default {
     name: 'App',
@@ -62,7 +74,9 @@ export default {
             isFetching: false,
             isDataBaseAvalable: '',
             dateId: '',
-            scrollWidth: '0px'
+            scrollWidth: '0px',
+            dbStatus: null,
+            stompClient: null // реактивное состояние для клиента
         };
     },
     computed: {
@@ -81,7 +95,6 @@ export default {
                 const date = new Date(weekStart);
                 date.setDate(weekStart.getDate() + index);
 
-            
                 return {
                     dayOfWeek: day,
                     date: `${date.getDate()} ${this.getMonthName(date.getMonth())}`,
@@ -98,7 +111,7 @@ export default {
         closeModal() {
             this.isModalOpen = false;
         },
-        async handleSubmit() {            
+        async handleSubmit() {
             this.closeModal();
             await this.fetchEvents();
         },
@@ -108,7 +121,7 @@ export default {
             } else if (action === 'previous') {
                 this.previousWeek();
             }
-            await this.fetchEvents(); // обновляем данные
+            await this.fetchEvents();
         },
         getMonthName(month) {
             const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
@@ -138,7 +151,7 @@ export default {
         async deleteEvent(eventId) {
             try {
                 await axios.delete(`${import.meta.env.VITE_API_URL}/api/events/${eventId}`);
-                await this.fetchEvents(); // обновляем список
+                await this.fetchEvents();
             } catch (error) {
                 console.error('Ошибка при удалении события:', error);
             }
@@ -161,16 +174,74 @@ export default {
             else this.isDataBaseAvalable = false;
             
         },
-        getEventsForDay(date) {        
+        getEventsForDay(date) {
             return this.events.filter(event => event.eventDate === date);
-        }
+        },
+        
+        /*initWebSocket() {
+            const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost';
+            const wsUrl = `${backendUrl.replace('http', 'ws')}/ws`; // например, ws://localhost/ws
+
+            // Создаем клиент STOMP через brokerURL
+            const client = new Client({
+                brokerURL: wsUrl,
+                debug: (msg) => console.log('STOMP: ', msg),
+                reconnectDelay: 5000,
+                heartbeatIncoming: 4000,
+                heartbeatOutgoing: 4000,                
+            });
+
+            // Сохраняем клиент в data()
+            this.stompClient = client;
+
+            // Подписываемся на темы
+            client.onConnect = (frame) => {
+                console.log("Подключились к STOMP", frame);
+
+                // Пример подписки из твоего примера
+                client.subscribe('/topic/test01', (message) => {
+                    console.log(`Получено сообщение: ${message.body}`);
+                });
+
+                // Отправка тестового сообщения при подключении
+                client.publish({ destination: '/topic/test01', body: 'Первое сообщение от клиента' });
+
+                // Подписка на существующие темы
+                client.subscribe('/topic/db-health', (message) => {
+                    const payload = JSON.parse(message.body);
+                    this.dbStatus = payload;
+                    this.isDataBaseAvalable = payload.status === 'UP';
+                });
+
+                client.subscribe('/topic/events', (message) => {
+                    const event = JSON.parse(message.body);
+                    const index = this.events.findIndex(e => e.id === event.id);
+
+                    if (index === -1) {
+                        this.events.push(event);
+                    } else {
+                        this.events[index] = event;
+                    }
+                });
+            };
+
+            client.onStompError = (frame) => {
+                console.error("STOMP Ошибка:", frame.headers.message);
+            };
+
+            client.onWebSocketClose = () => {
+                console.warn("Соединение закрыто");
+            };
+
+            client.activate(); // активируем клиент
+        }*/
     },
     mounted() {
         this.updateScrollBarWidth();
-        this.fetchEvents(); // один раз при монтировании
+        this.fetchEvents();
+        //this.initWebSocket(); 
     }
 };
-
 </script>
 
 <style>
@@ -283,7 +354,16 @@ export default {
     background-repeat: no-repeat;
 }
 
-
+#DataBaseNotAvalable {
+    color: red;
+    font-size: 30px;
+    font-weight: 900;
+    background-color: rgba(243, 243, 243, 0.8);
+    padding: 20px;
+    margin: auto;
+    margin-top: 35px;
+    border-radius: 15px;
+}
 
 body {
     margin: 0;

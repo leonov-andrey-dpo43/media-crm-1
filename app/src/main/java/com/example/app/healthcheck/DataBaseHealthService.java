@@ -1,4 +1,4 @@
-package com.example.demo.healthcheck.database;
+package com.example.app.healthcheck;
 
 import javax.sql.DataSource;
 import org.springframework.stereotype.Service;

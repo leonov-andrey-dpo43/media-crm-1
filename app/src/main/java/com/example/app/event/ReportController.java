@@ -1,8 +1,11 @@
-package com.example.demo.event.controller;
+package com.example.app.event;
 
+import com.example.app.websocket.EventDTO;
+import com.example.app.event.Report;
+import com.example.app.event.ReportRepository;
+import com.example.app.websocket.WebSocketNotificationService;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.event.model.Report;
-import com.example.demo.event.service.ReportService;
+
 
 import java.util.List;
 
