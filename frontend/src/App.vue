@@ -348,7 +348,7 @@ export default {
     position: absolute;
     top: 0px;
     left: 0px;
-    background-image: url('@/backgrounds/fon_5.jpg'); /* Путь к твоей картинке */
+    background-image: url('@/backgrounds/fon_1.jpg'); /* Путь к твоей картинке */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
