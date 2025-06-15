@@ -1,0 +1,74 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout код
+        uses: actions/checkout@v4
+      
+      # Сборка и публикация бэкенд-образа
+      - name: Сборка бэкенд-образа
+        run: |
+          docker build \
+            --no-cache \
+            -f ./app/Dockerfile \
+            -t leonovandreydpo43/media-crm-1-backend:latest \
+            ./app
+
+      - name: Авторизация и отправка бэкенд-образа в Docker Hub        
+        run: |
+          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+          docker push leonovandreydpo43/media-crm-1-backend:latest
+
+      # Сборка и публикация фронтенд-образа
+      - name: Сборка фронтенд-образа
+        run: |
+          docker build \
+            --no-cache \
+            -f ./frontend/Dockerfile.prod \
+            -t leonovandreydpo43/media-crm-1-frontend:latest \
+            ./frontend
+
+      - name: Авторизация и отправка фронтенд-образа в Docker Hub        
+        run: |
+          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+          docker push leonovandreydpo43/media-crm-1-frontend:latest
+
+      # Деплой на сервер через SSH  
+      - name: Деплой на сервер через SSH  
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }} 
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "Подключаемся к серверу и обновляем проект..."
+            cd /home/media-crm || (echo "Папка не найдена" && exit 1)
+
+            echo "Сбрасываем локальные изменения..."
+            git reset --hard HEAD
+            git clean -fd
+            
+            echo "Стягиваем последние изменения..."
+            git pull origin main
+
+            echo "Останавливаем старые контейнеры..."
+            docker-compose down
+
+            echo "Скачиваем новые образы..."
+            docker-compose pull
+
+            echo "Запускаем сервисы..."
+            docker-compose up -d --build --force-recreate
+
+            echo "Очистка неиспользуемых образов и контейнеров"
+            docker container prune -f
+            docker image prune -a -f
