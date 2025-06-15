@@ -12,21 +12,14 @@ services:
       POSTGRES_DB: monitoring
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
 
   backend:
-    build:
-      context: ./app
-      dockerfile: Dockerfile
+    image: leonovandreydpo43/media-crm-1-backend
     container_name: jar-prod
-    ports:
-      - "8080:8080"
-    #mem_limit: 512m
     deploy:
       resources:
         limits:
@@ -37,11 +30,9 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-  # Nginx (отдача Laravel API + статики Vue)
+
   nginx:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+    image: leonovandreydpo43/media-crm-1-frontend
     container_name: nginx-prod
     ports:
       - "80:80"
@@ -50,7 +41,6 @@ services:
       - app-network
     depends_on:
       - backend
-  
-  
+
 volumes:
   postgres_data: {}
